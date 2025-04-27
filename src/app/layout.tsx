@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import SPWMini from 'spwmini/client';
 import { useEffect } from "react";
 
