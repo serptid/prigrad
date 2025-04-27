@@ -1,6 +1,6 @@
+"use client"
 import SPWMini from 'spwmini/client';
 import { useEffect } from "react";
-
 
 export default function RootLayout({
   children,
