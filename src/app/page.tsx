@@ -14,14 +14,14 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-b from-green-950 to-green-800 overflow-hidden flex flex-col items-center justify-center py-4 px-4 font-sans">
+    <main className="relative min-h-screen bg-gradient-to-b from-green-950 to-green-800 overflow-hidden flex flex-col items-center justify-center py-8 px-4 font-sans">
       <div className="absolute inset-0 bg-[url('/leaf-texture.png')] bg-cover opacity-20 animate-pulse"></div>
 
       <motion.h1
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="text-5xl font-extrabold mb-4 text-center text-green-100 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)] tracking-wide"
+        className="text-8xl font-extrabold mb-4 text-center text-green-100 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)] tracking-wide"
       >
         Прыград
       </motion.h1>
@@ -30,7 +30,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.3 }}
-        className="text-xl max-w-2xl text-center mb-6 text-green-200 leading-relaxed"
+        className="text-xl max-w-2xl text-center mb-2 text-green-200 leading-relaxed"
       >
         Добро пожаловать в Прыград — зелёный и тёплый город Minecraft, где деревья обнимают здания, а приключения начинаются за каждым холмом.
       </motion.p>
