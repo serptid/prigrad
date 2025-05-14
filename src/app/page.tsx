@@ -68,9 +68,13 @@ export default function Home() {
 
 function FeatureCard({ title, description }: { title: string; description: string }) {
   return (
-    <div className="bg-green-800 rounded-3xl shadow-2xl p-8 border-4 border-green-600 text-center hover:scale-110 hover:shadow-green-400/50 transition-all duration-300 animate-fadeIn">
+    <motion.div
+      whileHover={{ scale: 1.1 }}
+      transition={{ type: "spring", stiffness: 300 }}
+      className="bg-green-800 rounded-3xl shadow-2xl p-8 border-4 border-green-600 text-center transition-transform duration-300"
+    >
       <h2 className="text-3xl font-semibold mb-4 text-green-100 tracking-wide">{title}</h2>
       <p className="text-green-200 leading-relaxed">{description}</p>
-    </div>
+    </motion.div>
   );
 }
