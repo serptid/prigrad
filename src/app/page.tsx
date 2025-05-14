@@ -3,8 +3,17 @@
 import { motion } from "framer-motion";
 import { Button } from "@nextui-org/react";
 import "@/app/globals.css";
+import SPWMini from 'spwmini/client';
+import { useEffect, useState } from "react";
+
 
 export default function Home() {
+  const [spm, setSpm] = useState<SPWMini | null>(null);
+  useEffect(() => {
+  const spmInstance = new SPWMini('8346d39a-bc0e-48b8-9f4b-85c37a32e55a');
+  setSpm(spmInstance);
+  }, []);
+
   return (
     <main className="relative min-h-screen bg-gradient-to-b from-green-950 to-green-800 overflow-hidden flex flex-col items-center justify-center p-8 font-sans">
       <div className="absolute inset-0 bg-[url('/leaf-texture.png')] bg-cover opacity-20 animate-pulse"></div>
@@ -53,6 +62,11 @@ export default function Home() {
           radius="full"
           size="lg"
           className="bg-green-700 hover:bg-green-800 text-lg font-bold py-4 px-8 shadow-xl"
+          onClick={() => {
+              spm?.openURL('https://discord.gg/R8D53fZFfD');
+              window.open('https://discord.gg/R8D53fZFfD', '_blank', 'noopener,noreferrer');
+            }}
+
         >
           Присоединиться к Прыграду
         </Button>
