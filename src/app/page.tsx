@@ -57,7 +57,7 @@ export default function Home() {
 
     // Отталкивание между кнопками
     const repelled = updated.map((btnA, i) => {
-      let totalOffset = { x: 0, y: 0 };
+      const totalOffset = { x: 0, y: 0 };
       updated.forEach((btnB, j) => {
         if (i === j) return;
 
