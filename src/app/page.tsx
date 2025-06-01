@@ -35,23 +35,53 @@ export default function Home() {
       const dy = e.clientY - (rect.top + rect.height / 2);
       const distance = Math.sqrt(dx * dx + dy * dy);
 
+      let newX = btn.position.x;
+      let newY = btn.position.y;
+      let newScale = btn.scale;
+
       if (distance < 250) {
         const angle = Math.atan2(dy, dx);
         const strength = Math.max(150 - distance, 30);
         const offsetX = Math.cos(angle) * -strength;
         const offsetY = Math.sin(angle) * -strength;
 
-        const newX = Math.max(Math.min(btn.position.x + offsetX, window.innerWidth / 2 - 100), -window.innerWidth / 2 + 100);
-        const newY = Math.max(Math.min(btn.position.y + offsetY, window.innerHeight / 2 - 100), -window.innerHeight / 2 + 100);
-        const newScale = Math.max(0.1, distance / 300);
-
-        return { ...btn, position: { x: newX, y: newY }, scale: newScale };
+        newX = Math.max(Math.min(newX + offsetX, window.innerWidth / 2 - 100), -window.innerWidth / 2 + 100);
+        newY = Math.max(Math.min(newY + offsetY, window.innerHeight / 2 - 100), -window.innerHeight / 2 + 100);
+        newScale = Math.max(0.1, distance / 300);
       } else {
-        return { ...btn, scale: 1 };
+        newScale = 1;
       }
+
+      return { ...btn, position: { x: newX, y: newY }, scale: newScale };
     });
 
-    setButtons(updated);
+    // Отталкивание между кнопками
+    const repelled = updated.map((btnA, i) => {
+      let totalOffset = { x: 0, y: 0 };
+      updated.forEach((btnB, j) => {
+        if (i === j) return;
+
+        const dx = btnA.position.x - btnB.position.x;
+        const dy = btnA.position.y - btnB.position.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 140 && dist > 1) {
+          const force = (140 - dist) / 5;
+          totalOffset.x += (dx / dist) * force;
+          totalOffset.y += (dy / dist) * force;
+        }
+      });
+
+      return {
+        ...btnA,
+        position: {
+          x: btnA.position.x + totalOffset.x,
+          y: btnA.position.y + totalOffset.y,
+        },
+      };
+    });
+
+    setButtons(repelled);
   };
 
   const handleClick = (id: string, isReal: boolean) => {
@@ -77,8 +107,8 @@ export default function Home() {
         : Array.from({ length: 3 }).map((_, i) => ({
             id: `${id}-child-${i}`,
             position: {
-              x: clickedButton.position.x + (i - 1) * 120,
-              y: clickedButton.position.y + 120,
+              x: clickedButton.position.x + (i - 1) * 140,
+              y: clickedButton.position.y + 140,
             },
             scale: 1,
             isReal: i === Math.floor(Math.random() * 3),
@@ -130,7 +160,9 @@ export default function Home() {
       {buttons.map((btn) => (
         <motion.div
           key={btn.id}
-          ref={(el) => { buttonRefs.current[btn.id] = el; }}
+          ref={(el) => {
+            buttonRefs.current[btn.id] = el;
+          }}
           animate={{ x: btn.position.x, y: btn.position.y, scale: btn.scale }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
           className="absolute"
