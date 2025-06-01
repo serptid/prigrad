@@ -4,13 +4,21 @@ import { motion } from "framer-motion";
 import { Button } from "@nextui-org/react";
 import "@/app/globals.css";
 import SPWMini from 'spwmini/client';
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+type GameButton = {
+  id: string;
+  position: { x: number; y: number };
+  scale: number;
+  isReal: boolean;
+};
 
 export default function Home() {
   const [spm, setSpm] = useState<SPWMini | null>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1);
-  const buttonRef = useRef<HTMLDivElement>(null);
+  const [buttons, setButtons] = useState<GameButton[]>([
+    { id: "root", position: { x: 0, y: 0 }, scale: 1, isReal: false },
+  ]);
+  const buttonRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     const spmInstance = new SPWMini('8346d39a-bc0e-48b8-9f4b-85c37a32e55a');
@@ -18,30 +26,65 @@ export default function Home() {
   }, []);
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!buttonRef.current) return;
+    const updated = buttons.map((btn) => {
+      const ref = buttonRefs.current[btn.id];
+      if (!ref) return btn;
 
-    const rect = buttonRef.current.getBoundingClientRect();
-    const dx = e.clientX - (rect.left + rect.width / 2);
-    const dy = e.clientY - (rect.top + rect.height / 2);
-    const distance = Math.sqrt(dx * dx + dy * dy);
+      const rect = ref.getBoundingClientRect();
+      const dx = e.clientX - (rect.left + rect.width / 2);
+      const dy = e.clientY - (rect.top + rect.height / 2);
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-    if (distance < 250) {
-      const angle = Math.atan2(dy, dx);
-      const strength = Math.max(150 - distance, 30);
-      const offsetX = Math.cos(angle) * -strength;
-      const offsetY = Math.sin(angle) * -strength;
+      if (distance < 250) {
+        const angle = Math.atan2(dy, dx);
+        const strength = Math.max(150 - distance, 30);
+        const offsetX = Math.cos(angle) * -strength;
+        const offsetY = Math.sin(angle) * -strength;
 
-      setPosition(prev => {
-        const newX = Math.max(Math.min(prev.x + offsetX, window.innerWidth / 2 - 100), -window.innerWidth / 2 + 100);
-        const newY = Math.max(Math.min(prev.y + offsetY, window.innerHeight / 2 - 100), -window.innerHeight / 2 + 100);
-        return { x: newX, y: newY };
-      });
+        const newX = Math.max(Math.min(btn.position.x + offsetX, window.innerWidth / 2 - 100), -window.innerWidth / 2 + 100);
+        const newY = Math.max(Math.min(btn.position.y + offsetY, window.innerHeight / 2 - 100), -window.innerHeight / 2 + 100);
+        const newScale = Math.max(0.1, distance / 300);
 
-      const newScale = Math.max(0.1, distance / 300);
-      setScale(newScale);
-    } else {
-      setScale(1);
+        return { ...btn, position: { x: newX, y: newY }, scale: newScale };
+      } else {
+        return { ...btn, scale: 1 };
+      }
+    });
+
+    setButtons(updated);
+  };
+
+  const handleClick = (id: string, isReal: boolean) => {
+    if (isReal) {
+      spm?.openURL('https://discord.gg/R8D53fZFfD');
+      window.open('https://discord.gg/R8D53fZFfD', '_blank', 'noopener,noreferrer');
+      return;
     }
+
+    const clickedButton = buttons.find((b) => b.id === id);
+    if (!clickedButton) return;
+
+    const children =
+      id === "root"
+        ? [
+            {
+              id: `${id}-1`,
+              position: { x: clickedButton.position.x + 100, y: clickedButton.position.y + 100 },
+              scale: 1,
+              isReal: false,
+            },
+          ]
+        : Array.from({ length: 3 }).map((_, i) => ({
+            id: `${id}-child-${i}`,
+            position: {
+              x: clickedButton.position.x + (i - 1) * 120,
+              y: clickedButton.position.y + 120,
+            },
+            scale: 1,
+            isReal: i === Math.floor(Math.random() * 3),
+          }));
+
+    setButtons((prev) => [...prev, ...children]);
   };
 
   return (
@@ -84,25 +127,25 @@ export default function Home() {
         />
       </div>
 
-      <motion.div
-        ref={buttonRef}
-        animate={{ x: position.x, y: position.y, scale }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="mt-12 absolute"
-      >
-        <Button
-          color="success"
-          radius="full"
-          size="lg"
-          className="bg-green-700 hover:bg-green-800 text-md font-bold py-3.5 px-7 shadow-xl"
-          onClick={() => {
-            spm?.openURL('https://discord.gg/R8D53fZFfD');
-            window.open('https://discord.gg/R8D53fZFfD', '_blank', 'noopener,noreferrer');
-          }}
+      {buttons.map((btn) => (
+        <motion.div
+          key={btn.id}
+          ref={(el) => { buttonRefs.current[btn.id] = el; }}
+          animate={{ x: btn.position.x, y: btn.position.y, scale: btn.scale }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="absolute"
         >
-          Присоединиться к Прыграду
-        </Button>
-      </motion.div>
+          <Button
+            color="success"
+            radius="full"
+            size="lg"
+            className="bg-green-700 hover:bg-green-800 text-md font-bold py-3.5 px-7 shadow-xl"
+            onClick={() => handleClick(btn.id, btn.isReal)}
+          >
+            {btn.isReal ? "Настоящий портал" : "Присоединиться к Прыграду"}
+          </Button>
+        </motion.div>
+      ))}
     </main>
   );
 }
