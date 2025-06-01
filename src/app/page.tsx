@@ -9,6 +9,7 @@ import { useEffect, useState, useRef } from "react";
 export default function Home() {
   const [spm, setSpm] = useState<SPWMini | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
   const buttonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,21 +25,22 @@ export default function Home() {
     const dy = e.clientY - (rect.top + rect.height / 2);
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    if (distance < 150) {
+    if (distance < 250) {
       const angle = Math.atan2(dy, dx);
-      const offsetX = Math.cos(angle) * -100;
-      const offsetY = Math.sin(angle) * -100;
+      const strength = Math.max(150 - distance, 30);
+      const offsetX = Math.cos(angle) * -strength;
+      const offsetY = Math.sin(angle) * -strength;
 
       setPosition(prev => {
-        let newX = prev.x + offsetX;
-        let newY = prev.y + offsetY;
-
-        // Ограничим по краям экрана
-        newX = Math.max(Math.min(newX, window.innerWidth / 2 - 100), -window.innerWidth / 2 + 100);
-        newY = Math.max(Math.min(newY, window.innerHeight / 2 - 100), -window.innerHeight / 2 + 100);
-
+        const newX = Math.max(Math.min(prev.x + offsetX, window.innerWidth / 2 - 100), -window.innerWidth / 2 + 100);
+        const newY = Math.max(Math.min(prev.y + offsetY, window.innerHeight / 2 - 100), -window.innerHeight / 2 + 100);
         return { x: newX, y: newY };
       });
+
+      const newScale = Math.max(0.1, distance / 300);
+      setScale(newScale);
+    } else {
+      setScale(1);
     }
   };
 
@@ -84,8 +86,8 @@ export default function Home() {
 
       <motion.div
         ref={buttonRef}
-        animate={{ x: position.x, y: position.y }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        animate={{ x: position.x, y: position.y, scale }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
         className="mt-12 absolute"
       >
         <Button
